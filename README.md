@@ -262,20 +262,54 @@ az group delete -n rg-garimpo
 
 ---
 
-## ⚙️ Ajustando os filtros
+## 🎯 Personalize para o SEU perfil
 
-Tudo em [`src/config.ts`](src/config.ts):
+Os filtros vêm preenchidos para um perfil **Full Stack Java/Vue/React/TS**. Pra adaptar pro seu, mexa só no arquivo [`src/config.ts`](src/config.ts) — todo comentado. Três ajustes resolvem 90% dos casos:
+
+### a) O que ele BUSCA — `searches`
+
+Troque pelos cargos/tecnologias que você quer receber. Cada item vira uma busca no LinkedIn:
+
+```ts
+searches: [
+  { keywords: "Desenvolvedor Python Django", label: "Python" },
+  { keywords: "Engenheiro de Dados", label: "Dados" },
+  { keywords: "Desenvolvedor Golang", label: "Go" },
+],
+```
+
+> 💡 `label` é só um apelido que aparece no log. Quanto mais específico o `keywords`, mais certeiras as vagas.
+
+### b) Stacks que você NÃO quer — `filters.blockedStacks`
+
+Se o título tiver alguma dessas palavras, a vaga é descartada. **Remova** o que você trabalha e **adicione** o que não quer:
+
+```ts
+// exemplo: sou dev Python e não quero front-end
+blockedStacks: ["react", "angular", "vue", "frontend", "php"],
+```
+
+### c) Nível de senioridade — `filters.blockedSeniority`
+
+Descarta vagas com esses termos no título. O padrão foca **Júnior + Pleno** (bloqueia Sênior pra cima). Se você já é Sênior, por exemplo, tire `senior` da lista e adicione `junior`/`estagio`:
+
+```ts
+blockedSeniority: ["junior", "júnior", "estagio", "estágio", "trainee"],
+```
+
+### Outros ajustes (opcionais)
 
 | Config | O que faz |
 |---|---|
-| `searches` | Os termos que ele busca no LinkedIn |
+| `location` + `geoId` | País da busca. Fora do Brasil? Troque o texto e o [geoId do país](https://www.linkedin.com/jobs/search) |
+| `filters.onlyBrazil` | Deixe `false` se não quiser filtrar por Brasil |
 | `timePosted` | Janela de tempo (`r86400` = 24h · `r604800` = 7 dias) |
-| `filters.blockedStacks` | Tecnologias a ignorar (ex.: `php`) |
-| `filters.blockedSeniority` | Níveis a descartar (ex.: `senior`) |
-| `filters.onlyBrazil` | Aceitar só vagas do Brasil |
-| `geoId` | geoId do país no LinkedIn (Brasil = `106057199`) |
 | `maxNotificationsPerRun` | Máx. de vagas por execução (evita flood) |
 | `pollIntervalMs` | Intervalo do loop (só no modo VPS/local) |
+
+**Depois de editar:**
+- rodando **local**: é só `npm run run:once` de novo;
+- rodando no **Azure**: rebuild + push da imagem e `az containerapp job update` (ver seção "Gerenciando o deploy").
 
 Variáveis de ambiente úteis: `RUN_ONCE`, `MAX_PER_RUN`, `SQLITE_JOURNAL_MODE`, `SYNC_DB_TO_SHARE`, `DB_PATH`, `HEADFUL`.
 
