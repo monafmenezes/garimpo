@@ -50,7 +50,7 @@ cp .env.example .env
 
    ```
    Use this token to access the HTTP API:
-   8123456789:AAH1a2B3c4D5e6F7g8H9i0J1k2L3m4N5o6P
+   123456789:AA********************************
    ```
 
    👉 **Esse número comprido (com os dois-pontos no meio) é o seu `TELEGRAM_BOT_TOKEN`.** Copie e guarde.
@@ -93,7 +93,7 @@ Procure no JSON por `"chat":{"id":987654321,...}` — esse número é o seu chat
 ### 1.4 — Colar tudo no `.env`
 
 ```env
-TELEGRAM_BOT_TOKEN=8123456789:AAH1a2B3c4D5e6F7g8H9i0J1k2L3m4N5o6P
+TELEGRAM_BOT_TOKEN=123456789:AA********************************
 TELEGRAM_CHAT_ID=987654321
 ```
 
