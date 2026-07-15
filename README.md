@@ -4,6 +4,8 @@ Bot que **garimpa vagas remotas no LinkedIn**, passa cada uma por uma **malha fi
 
 Cansou de perder horas garimpando vaga na mão, caindo em anúncio patrocinado, vaga "falsa remota" ou fora da sua stack? O `garimpo` faz esse trabalho pra você.
 
+![Arquitetura do garimpo: LinkedIn → Scraper (Playwright) → Malha fina → Dedupe (SQLite) → Telegram, rodando num Azure Container Apps Job](docs/architecture.png)
+
 ## ✨ O que ele faz
 
 - 🔎 Busca vagas das **últimas 24h** na sua stack (configurável)
