@@ -1,0 +1,12 @@
+services:
+  garimpo:
+    build: .
+    container_name: garimpo
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      # Persiste o banco SQLite entre reinícios/deploys.
+      - ./data:/app/data
+    # Ajuda a evitar problemas de memória compartilhada do Chromium.
+    shm_size: "1gb"

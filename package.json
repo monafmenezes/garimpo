@@ -1,0 +1,25 @@
+{
+  "name": "garimpo",
+  "version": "1.0.0",
+  "description": "Bot que garimpa vagas remotas no LinkedIn, passa por uma malha fina de filtros e manda as boas direto no Telegram.",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "build": "tsc",
+    "start:prod": "node dist/index.js",
+    "run:once": "RUN_ONCE=true tsx src/index.ts"
+  },
+  "dependencies": {
+    "playwright": "^1.49.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=22.5"
+  }
+}
