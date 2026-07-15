@@ -71,7 +71,6 @@ export const config = {
       "rails",
       "python",
       "django",
-      "angular",
       ".net",
       "c#",
       "cobol",
