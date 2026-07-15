@@ -191,7 +191,11 @@ properties:
     replicaTimeout: 600
     replicaRetryLimit: 1
     scheduleTriggerConfig:
-      cronExpression: "*/30 * * * *"   # a cada 30 min
+      # ⏰ O cron do Azure roda em UTC! O Brasil é UTC-3.
+      # "*/30 * * * *"        = a cada 30 min, o dia todo
+      # "*/30 10-23,0-2 * * *" = a cada 30 min das 07h à meia-noite (BRT),
+      #                          pulando a madrugada (00h-07h no Brasil)
+      cronExpression: "*/30 10-23,0-2 * * *"
       parallelism: 1
       replicaCompletionCount: 1
     registries:
