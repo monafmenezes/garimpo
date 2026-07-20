@@ -57,6 +57,18 @@ export const config = {
     blockPromoted: true,
 
     /**
+     * Empresas a ignorar — agregadores/reposters que republicam vaga de todo
+     * mundo e poluem o feed (não são o empregador real). Casa como palavra
+     * inteira contra o NOME DA EMPRESA do card (não o texto todo).
+     */
+    blockedCompanies: [
+      "hire feed",
+      "hirefeed", // variante sem espaço
+      "hired",
+      "jobgether",
+    ],
+
+    /**
      * Stacks/termos que você NÃO trabalha — se aparecer no título, descarta.
      * (Você pediu pra remover PHP 😄)
      */

@@ -34,21 +34,29 @@ export function applyFilters(job: RawJob): FilterResult {
     return { approved: false, reason: "promovida (anúncio pago)" };
   }
 
-  // 2) Stack que você não trabalha (checa no título)
+  // 2) Empresas ignoradas (agregadores/reposters) — casa no nome da empresa
+  const company = normalize(job.company);
+  for (const name of f.blockedCompanies) {
+    if (containsWord(company, name)) {
+      return { approved: false, reason: `empresa ignorada: ${job.company}` };
+    }
+  }
+
+  // 3) Stack que você não trabalha (checa no título)
   for (const stack of f.blockedStacks) {
     if (containsWord(title, stack)) {
       return { approved: false, reason: `stack bloqueada: ${stack}` };
     }
   }
 
-  // 3) Senioridade acima do alvo (Júnior + Pleno)
+  // 4) Senioridade acima do alvo (Júnior + Pleno)
   for (const level of f.blockedSeniority) {
     if (containsWord(title, level)) {
       return { approved: false, reason: `senioridade: ${level}` };
     }
   }
 
-  // 4) Falsa remota (híbrida/presencial disfarçada)
+  // 5) Falsa remota (híbrida/presencial disfarçada)
   if (f.rejectFakeRemote) {
     for (const marker of f.fakeRemoteMarkers) {
       if (containsWord(fullText, marker)) {
@@ -57,7 +65,7 @@ export function applyFilters(job: RawJob): FilterResult {
     }
   }
 
-  // 5) Foco no Brasil (a localização do card precisa indicar o país)
+  // 6) Foco no Brasil (a localização do card precisa indicar o país)
   if (f.onlyBrazil) {
     const loc = normalize(job.location);
 
