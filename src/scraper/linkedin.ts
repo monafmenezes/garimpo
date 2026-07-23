@@ -35,13 +35,14 @@ export async function closeBrowser(): Promise<void> {
 function buildSearchUrl(query: SearchQuery, start = 0): string {
   const params = new URLSearchParams({
     keywords: query.keywords,
-    location: config.location,
+    location: query.location ?? config.location,
     f_WT: "2", // 2 = remoto
     f_TPR: config.timePosted, // janela de tempo
     start: String(start),
   });
   // geoId ancora a busca no país de forma muito mais confiável que o texto.
-  if (config.geoId) params.set("geoId", config.geoId);
+  const geoId = query.geoId ?? config.geoId;
+  if (geoId) params.set("geoId", geoId);
   return `https://www.linkedin.com/jobs/search?${params.toString()}`;
 }
 

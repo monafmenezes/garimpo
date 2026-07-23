@@ -12,6 +12,8 @@ export interface RawJob {
   rawText?: string;
   /** Marca se o card veio sinalizado como promovido/patrocinado. */
   promoted?: boolean;
+  /** País da busca que trouxe a vaga — usado pra exibir a bandeirinha. */
+  country?: "BR" | "PT";
 }
 
 /** Resultado da malha fina para uma vaga. */

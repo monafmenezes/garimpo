@@ -8,23 +8,72 @@ export interface SearchQuery {
   keywords: string;
   /** Rótulo amigável só pra log */
   label?: string;
+  /**
+   * País alvo desta busca — usado pelos filtros de localização/idioma.
+   * "BR" quando omitido (comportamento original).
+   */
+  country?: "BR" | "PT";
+  /** Sobrescreve a localização (texto) só pra esta busca. */
+  location?: string;
+  /** Sobrescreve o geoId só pra esta busca. */
+  geoId?: string;
 }
 
-export const config = {
-  /**
-   * Buscas que o bot vai rodar a cada ciclo.
-   * Preenchidas com base no perfil da Monalisa (Full Stack Java/Vue/React/TS).
-   */
-  searches: [
-    { keywords: "Desenvolvedor Backend Java Spring Boot", label: "Backend Java" },
-    { keywords: "Desenvolvedor Full Stack Java", label: "Full Stack Java" },
-    { keywords: "Desenvolvedor Vue.js TypeScript", label: "Vue/TS" },
-    { keywords: "Desenvolvedor React TypeScript", label: "React/TS" },
-    { keywords: "Desenvolvedor Next.js", label: "Next.js" },
-    { keywords: "Engenheiro de Software Microsserviços", label: "Microsserviços" },
-  ] satisfies SearchQuery[],
+/**
+ * Buscas base (keywords em português) rodadas no Brasil. Preenchidas com
+ * base no perfil da Monalisa (Full Stack Java/Vue/React/TS).
+ */
+const baseSearches = [
+  { keywords: "Desenvolvedor Backend Java Spring Boot", label: "Backend Java" },
+  { keywords: "Desenvolvedor Full Stack Java", label: "Full Stack Java" },
+  { keywords: "Desenvolvedor Vue.js TypeScript", label: "Vue/TS" },
+  { keywords: "Desenvolvedor React TypeScript", label: "React/TS" },
+  { keywords: "Desenvolvedor Next.js", label: "Next.js" },
+  { keywords: "Engenheiro de Software Microsserviços", label: "Microsserviços" },
+];
 
-  /** Localização usada na busca (texto). */
+/**
+ * Mesmas buscas em inglês — mercado português posta muita vaga em inglês
+ * (confirmado em teste: "Desenvolvedor Backend Java" sozinho não achou nada
+ * lá, enquanto o termo em inglês encontra vagas normalmente).
+ */
+const baseSearchesEnglish = [
+  { keywords: "Java Backend Developer Spring Boot", label: "Backend Java" },
+  { keywords: "Full Stack Java Developer", label: "Full Stack Java" },
+  { keywords: "Vue.js TypeScript Developer", label: "Vue/TS" },
+  { keywords: "React TypeScript Developer", label: "React/TS" },
+  { keywords: "Next.js Developer", label: "Next.js" },
+  { keywords: "Software Engineer Microservices", label: "Microsserviços" },
+];
+
+/** Buscas no mercado brasileiro (comportamento original). */
+const searchesBrazil: SearchQuery[] = baseSearches.map((s) => ({
+  ...s,
+  country: "BR",
+}));
+
+/**
+ * Buscas no mercado português — roda a keyword em português E em inglês
+ * (dobra a cobertura, já que os dois idiomas aparecem por lá), geoId de
+ * Portugal. Passam pela malha fina com foco em Portugal + filtro extra de
+ * "exige inglês" (ver filters.portugal), já que remota europeia costuma
+ * pedir fluência.
+ */
+const searchesPortugal: SearchQuery[] = [
+  ...baseSearches.map((s) => ({ ...s, label: `${s.label} (PT)` })),
+  ...baseSearchesEnglish.map((s) => ({ ...s, label: `${s.label} (PT-EN)` })),
+].map((s) => ({
+  ...s,
+  country: "PT" as const,
+  location: "Portugal",
+  geoId: "100364837", // geoId de Portugal (país) no LinkedIn
+}));
+
+export const config = {
+  /** Buscas que o bot vai rodar a cada ciclo (Brasil + Portugal). */
+  searches: [...searchesBrazil, ...searchesPortugal] satisfies SearchQuery[],
+
+  /** Localização usada na busca (texto), quando a query não define a sua. */
   location: "Brasil",
 
   /**
@@ -117,9 +166,11 @@ export const config = {
     fakeRemoteMarkers: [
       "híbrido",
       "hibrido",
+      "hybrid", // vagas em inglês (comum em Portugal) usam esse termo
       "presencial",
       "on-site",
       "on site",
+      "onsite",
       "no local",
       "comparecer",
     ],
@@ -157,6 +208,52 @@ export const config = {
     ],
     /** Rejeitar quando a localização vier vazia/desconhecida (mais seguro). */
     rejectUnknownLocation: true,
+
+    /**
+     * Malha fina específica das buscas com country: "PT" (ver searchesPortugal
+     * acima). Roda IGUAL à checagem "onlyBrazil", só que aceitando Portugal.
+     */
+    portugal: {
+      /** A localização do card é aceita se contiver um destes termos. */
+      markers: ["portugal", "lisboa", "lisbon", "porto"],
+
+      /**
+       * Tenta rejeitar vagas que exigem inglês FLUENTE/pra comunicação
+       * (reunião, falar com time internacional) — não pega "inglês pra ler
+       * documentação", que é normal e ok. Best effort: a busca pública do
+       * LinkedIn só traz o CARD resumido da vaga (sem a descrição
+       * completa), então isso só funciona quando o requisito já aparece no
+       * título ou no texto do próprio card. Não substitui ler a vaga antes
+       * de aplicar.
+       */
+      blockEnglishRequired: true,
+      englishMarkers: [
+        "ingles fluente",
+        "inglês fluente",
+        "fluent english",
+        "ingles avancado",
+        "inglês avançado",
+        "advanced english",
+        "proficiencia em ingles",
+        "proficiência em inglês",
+        "english proficiency",
+        "dominio de ingles",
+        "domínio de inglês",
+        "c1 english",
+        "b2 english",
+        "must speak english",
+        "falar ingles",
+        "falar inglês",
+        "conversação em inglês",
+        "conversacao em ingles",
+        "comunicação em inglês",
+        "comunicacao em ingles",
+        "speaking english",
+        "verbal english",
+        "reuniões em inglês",
+        "reunioes em ingles",
+      ],
+    },
   },
 
   /** ------------------------- COMPORTAMENTO ------------------------- */

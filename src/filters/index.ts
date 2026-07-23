@@ -1,4 +1,4 @@
-import { config } from "../config.js";
+import { config, type SearchQuery } from "../config.js";
 import type { RawJob, FilterResult } from "../types.js";
 
 /** Normaliza texto: minúsculas, sem acento, pra casar termos de forma robusta. */
@@ -21,8 +21,9 @@ function containsWord(haystack: string, term: string): boolean {
 /**
  * Passa uma vaga pela malha fina. Retorna aprovado/reprovado + motivo.
  * A ordem dos testes é do mais barato/comum pro mais específico.
+ * `query` indica de qual busca a vaga veio (country define BR x PT).
  */
-export function applyFilters(job: RawJob): FilterResult {
+export function applyFilters(job: RawJob, query: SearchQuery): FilterResult {
   const f = config.filters;
   const title = normalize(job.title);
   const fullText = normalize(
@@ -65,27 +66,53 @@ export function applyFilters(job: RawJob): FilterResult {
     }
   }
 
-  // 6) Foco no Brasil (a localização do card precisa indicar o país)
-  if (f.onlyBrazil) {
+  if (query.country === "PT") {
+    // 6a) Foco em Portugal (a localização do card precisa indicar o país)
     const loc = normalize(job.location);
+    const pt = f.portugal;
 
     if (!loc) {
       if (f.rejectUnknownLocation) {
         return { approved: false, reason: "localização desconhecida" };
       }
     } else {
-      // "brasil"/"brazil"/"região" no texto
-      const hasMarker = f.brazilMarkers.some((m) => loc.includes(normalize(m)));
-      // termina com uma UF brasileira, ex.: "são paulo, sp"
-      const ufPattern = new RegExp(`,\\s*(${f.brazilStateAbbrevs.join("|")})$`);
-      const hasUf = ufPattern.test(loc);
-      // remota ampla (LatAm/Américas) que costuma incluir o Brasil
-      const isBroad =
-        f.acceptBroadRemote &&
-        f.broadRemoteMarkers.some((m) => loc.includes(normalize(m)));
+      const hasMarker = pt.markers.some((m) => loc.includes(normalize(m)));
+      if (!hasMarker) {
+        return { approved: false, reason: `fora de Portugal: ${job.location}` };
+      }
+    }
 
-      if (!hasMarker && !hasUf && !isBroad) {
-        return { approved: false, reason: `fora do Brasil: ${job.location}` };
+    // 6b) Descarta vagas que já denunciam exigência de inglês no card
+    if (pt.blockEnglishRequired) {
+      for (const marker of pt.englishMarkers) {
+        if (containsWord(fullText, marker)) {
+          return { approved: false, reason: `exige inglês: ${marker}` };
+        }
+      }
+    }
+  } else {
+    // 6) Foco no Brasil (a localização do card precisa indicar o país)
+    if (f.onlyBrazil) {
+      const loc = normalize(job.location);
+
+      if (!loc) {
+        if (f.rejectUnknownLocation) {
+          return { approved: false, reason: "localização desconhecida" };
+        }
+      } else {
+        // "brasil"/"brazil"/"região" no texto
+        const hasMarker = f.brazilMarkers.some((m) => loc.includes(normalize(m)));
+        // termina com uma UF brasileira, ex.: "são paulo, sp"
+        const ufPattern = new RegExp(`,\\s*(${f.brazilStateAbbrevs.join("|")})$`);
+        const hasUf = ufPattern.test(loc);
+        // remota ampla (LatAm/Américas) que costuma incluir o Brasil
+        const isBroad =
+          f.acceptBroadRemote &&
+          f.broadRemoteMarkers.some((m) => loc.includes(normalize(m)));
+
+        if (!hasMarker && !hasUf && !isBroad) {
+          return { approved: false, reason: `fora do Brasil: ${job.location}` };
+        }
       }
     }
   }

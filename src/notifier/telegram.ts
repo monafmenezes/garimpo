@@ -21,6 +21,12 @@ function escapeHtml(text: string): string {
     .replace(/>/g, "&gt;");
 }
 
+/** Bandeira + rótulo do país da vaga, pra deixar claro de onde ela veio. */
+function countryTag(country: RawJob["country"]): string {
+  if (country === "PT") return "🇵🇹 Portugal";
+  return "🇧🇷 Brasil";
+}
+
 function formatMessage(job: RawJob): string {
   const title = escapeHtml(job.title);
   const company = escapeHtml(job.company);
@@ -30,7 +36,8 @@ function formatMessage(job: RawJob): string {
   return [
     `💎 <b>${title}</b>`,
     `🏢 ${company}`,
-    `📍 ${location}${posted}`,
+    `📍 ${location}`,
+    `${countryTag(job.country)}${posted}`,
     ``,
     `🔗 <a href="${job.url}">Ver vaga no LinkedIn</a>`,
   ].join("\n");
